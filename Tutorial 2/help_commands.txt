@@ -1,0 +1,47 @@
+Exercise 2
+a)
+
+sudo apt install sense-hat
+
+b)
+
+from sense_hat import SenseHat
+sense = SenseHat()
+
+c)
+
+# to measure the pressure
+pressure = sense.get_pressure()
+
+# to measure the temperature
+temp = sense.get_temperature()
+
+# to measure the humidity
+humidity = sense.get_humidity()
+
+# to show a message on the LED matrix
+sense.show_message("Hello world")
+
+# to clear the LEDs
+sense.clear()
+
+d)
+
+sense.stick.direction_up = "FUNCTION NAME"
+
+Exercise 3
+b)
+
+lsusb
+
+c)
+
+import serial
+
+d)
+
+ser = serial.Serial('/dev/ttyUSB0', 9600,timeout=.5)  # open serial port
+
+
+
+
