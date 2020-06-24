@@ -13,22 +13,23 @@ def show_hostname():
 
 def receive_data(data):
     print("received data: ", data)
-    if (data["rf_data"] == "ping"):
+    if (data["rf_data"] == b"ping"):
         # Received ping? -> Send pong back
         send_data("pong")
-    elif (data["rf_data"] == "pong"):
+    elif (data["rf_data"] == b"pong"):
         # Received pong? -> Store & calc RSSI
-        rssi_list.append(ord(data["rssi]"]))
+        rssi_list.append(ord(data["rssi"]))
         print_current_rssi_median()
         
-def send_data(data, dest_addr="\x00\x01"):
+def send_data(data, dest_addr="\x00\x0A"):
     xbee.send("tx",
               frame_id="\x00",
               dest_addr=dest_addr,
               data=data)
 
 def init_rssi_calc(n_pings=10):
-    dest_addr = "\x00\x01" # 2byte hex value (TODO: Set according to adress of destination XBee module)
+    rssi_list = []
+    dest_addr = "\x00\x0A" # 2byte hex value (TODO: Set according to adress of destination XBee module)
     for i in range(n_pings):
         send_data("ping", dest_addr)
 
@@ -40,20 +41,21 @@ def print_current_rssi_median():
 if __name__ == "__main__":
     sense = SenseHat()
     print(">> Opening serial port...")
-    ser = serial.Serial("/dev/ttyUSB0", 9600)
+    ser = serial.Serial("/dev/ttyUSB1", 9600)
     xbee = XBee(ser, callback=receive_data)
 
     rssi_list = []
 
     print(">> Waiting for events...")
-    for event in sense.stick.get_events():
-        if event.action == "pressed":
-            if event.direction == "middle":
-                print("** Event: Pressed.")
-                clear_matrix()
-            elif event.direction == "left":
-                print("** Event: Left")
-                init_rssi_calc()
-            elif event.direction == "right":
-                print("** Event: Right.")
-                show_hostname()
+    while True:
+        for event in sense.stick.get_events():
+            if event.action == "pressed":
+                if event.direction == "middle":
+                    print("** Event: Pressed.")
+                    clear_matrix()
+                elif event.direction == "left":
+                    print("** Event: Left")
+                    init_rssi_calc()
+                elif event.direction == "right":
+                    print("** Event: Right.")
+                    show_hostname()
