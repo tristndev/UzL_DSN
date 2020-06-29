@@ -14,19 +14,19 @@ def show_hostname():
 
 def receive_data(data):
     print("received data: ", data)
-    if (data["rf_data"] == "ping"):
+    if (data["rf_data"] == b"ping"):
         # Received ping? -> Send pong back
         send_data("pong")
-    elif (data["rf_data"] == "pong"):
+    elif (data["rf_data"] == b"pong"):
         # Received pong? -> Store RSSI
         rssi_dict[data["source_addr"]] = {"rssi": data["rssi]"],
                                           "last_ping_counter": ping_counter}
         # Remove dead nodes
         cleanse_rssi_dict()
-    elif data["rf_data"] == "msg1":
+    elif data["rf_data"] == b"msg1":
         # I am node B
         node_b_wrapper(data)
-    elif data["rf_data"] == "msg2":
+    elif data["rf_data"] == b"msg2":
         i_am_node("C")
 
 def cleanse_rssi_dict(remove_after_rounds = 3):
@@ -43,6 +43,7 @@ def send_data(data, dest_addr="\x00\x01"):
     """
     Sends given data to a given destination address.
     """
+    print("## send_data(): data: {}, destination: {}".format(data, dest_addr))
     xbee.send("tx",
               frame_id="\x00",
               dest_addr=dest_addr, # 2byte hex value (TODO: Set according to adress of destination XBee module)
@@ -84,10 +85,13 @@ def node_b_wrapper(data):
 def i_am_node(node):
     if node == "A":
         show_number(0, 255, 0, 0)
+        print("!!! I am node A")
     if node == "B":
         show_number(1, 0, 255, 0)
+        print("!!! I am node B")
     if node in ["C", "D"]:
         show_number(2, 0, 0, 255) 
+        print("!!! I am node C / D")
 
 
 if __name__ == "__main__":
@@ -101,14 +105,20 @@ if __name__ == "__main__":
     ping_routine(interval=10)
 
     print(">> Waiting for events...")
-    for event in sense.stick.get_events():
-        if event.action == "pressed":
-            if event.direction == "middle":
-                print("** Event: Pressed.")
-                start_distribution()
-            elif event.direction == "right":
-                print("** Event: Right.")
-                show_hostname()
+    print("   Press <middle> to start distribution of messages.")
+    print("   Press <up> to clear the matrix.")
+    while True:
+        for event in sense.stick.get_events():
+            if event.action == "pressed":
+                if event.direction == "middle":
+                    print("** Event: Pressed.")
+                    start_distribution()
+                elif event.direction == "right":
+                    print("** Event: Right.")
+                    show_hostname()
+                elif event.direction == "up":
+                    print("** Event: Up")
+                    clear_matrix()
 
 
 
